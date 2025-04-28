@@ -52,8 +52,7 @@ fn real_main() -> Result<()> {
         .subcommand(
             clap::Command::new("sync")
                 .about("Sync wlan information from nvram")
-                .arg(clap::arg!(-c --config [CONFIG] "IWD config path."))
-                .arg(clap::Arg::new("variable").multiple_values(true)),
+                .arg(clap::arg!(-c --config [CONFIG] "IWD config path.")),
         )
         .get_matches();
 

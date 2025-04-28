@@ -66,8 +66,7 @@ fn real_main() -> Result<()> {
         .subcommand(
             clap::Command::new("sync")
                 .about("Sync Bluetooth device information from nvram")
-                .arg(clap::arg!(-c --config [CONFIG] "Bluez config path."))
-                .arg(clap::Arg::new("variable").multiple_values(true)),
+                .arg(clap::arg!(-c --config [CONFIG] "Bluez config path.")),
         )
         .subcommand(
             clap::Command::new("dump").about("Dump binary Bluetooth device info from nvram"),
