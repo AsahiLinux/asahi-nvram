@@ -9,7 +9,7 @@ homepage = "https://github.com/WhatAmISupposedToPutHere/asahi-nvram"
 repository = "https://github.com/WhatAmISupposedToPutHere/asahi-nvram"
 
 [dependencies]
-rust-ini = "0.18.0"
+rust-ini = "0.21"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

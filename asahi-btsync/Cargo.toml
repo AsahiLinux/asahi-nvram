@@ -11,7 +11,7 @@ repository = "https://github.com/WhatAmISupposedToPutHere/asahi-nvram"
 [dependencies]
 dbus = "0.9.7"
 regex = "1.11.1"
-rust-ini = "0.18.0"
+rust-ini = "0.21"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
