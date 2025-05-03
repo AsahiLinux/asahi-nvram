@@ -85,9 +85,11 @@ fn real_main() -> Result<()> {
     file.read_to_end(&mut data).unwrap();
     let mut nv = nvram_parse(&data)?;
     let active = nv.active_part_mut();
-    let bt_devs = active
-        .get_variable(bt_var.as_bytes(), VarType::System)
-        .ok_or(Error::VariableNotFound)?;
+    let bt_devs = if let Some(var) = active.get_variable(bt_var.as_bytes(), VarType::System) {
+        var
+    } else {
+        return Ok(());
+    };
 
     match matches.subcommand() {
         Some(("list", _args)) => {
