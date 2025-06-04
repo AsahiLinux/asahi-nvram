@@ -12,5 +12,5 @@ repository = "https://github.com/WhatAmISupposedToPutHere/asahi-nvram"
 
 [dependencies]
 adler32 = "1"
-crc32fast = "1.3.2"
-nix = "0.26"
+crc32fast = "1.4"
+nix = { version = "0.29", features = ["ioctl"] }
