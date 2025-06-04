@@ -13,7 +13,7 @@ repository = "https://github.com/WhatAmISupposedToPutHere/asahi-nvram"
 [dependencies]
 uuid = "1"
 gpt = "3"
-clap = { version = "4.4.11", features = ["derive"] }
+clap = { version = "4.5", features = ["derive"] }
 
 [dependencies.apple-nvram]
 path = "../apple-nvram"
