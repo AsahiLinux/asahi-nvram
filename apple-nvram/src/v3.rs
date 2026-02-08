@@ -75,7 +75,7 @@ pub struct Nvram<'a> {
 }
 
 impl<'a> Nvram<'a> {
-    pub fn parse(nvr: &'a [u8]) -> crate::Result<Nvram<'_>> {
+    pub fn parse(nvr: &'a [u8]) -> crate::Result<Nvram<'a>> {
         let partition_count = nvr.len() / PARTITION_SIZE;
         let mut partitions: [Slot<Partition<'a>>; 16] = Default::default();
         let mut active = 0;
@@ -300,7 +300,7 @@ impl<'a> Partition<'a> {
         &'b mut self,
         key: &'c [u8],
         typ: VarType,
-    ) -> impl Iterator<Item = &mut Variable<'a>>
+    ) -> impl Iterator<Item = &'b mut Variable<'a>>
     where
         'a: 'b,
         'c: 'b,
@@ -314,7 +314,7 @@ impl<'a> Partition<'a> {
         &'b mut self,
         key: &'c [u8],
         typ: VarType,
-    ) -> impl Iterator<Item = &mut Variable<'a>>
+    ) -> impl Iterator<Item = &'b mut Variable<'a>>
     where
         'a: 'b,
         'c: 'b,

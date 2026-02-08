@@ -44,17 +44,17 @@ fn real_main() -> Result<()> {
         .subcommand(
             clap::Command::new("read")
                 .about("Read nvram variables")
-                .arg(clap::Arg::new("variable").multiple_values(true)),
+                .arg(clap::Arg::new("variable").num_args(1..)),
         )
         .subcommand(
             clap::Command::new("delete")
                 .about("Delete nvram variables")
-                .arg(clap::Arg::new("variable").multiple_values(true)),
+                .arg(clap::Arg::new("variable").num_args(1..)),
         )
         .subcommand(
             clap::Command::new("write")
                 .about("Write nvram variables")
-                .arg(clap::Arg::new("variable=value").multiple_values(true)),
+                .arg(clap::Arg::new("variable=value").num_args(1..)),
         )
         .get_matches();
     let default_name = "/dev/mtd/by-name/nvram".to_owned();
