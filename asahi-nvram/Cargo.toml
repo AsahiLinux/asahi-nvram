@@ -4,8 +4,8 @@ version = "0.2.4"
 edition = "2021"
 license = "MIT"
 description = "A tool to read and write nvram variables on ARM Macs"
-homepage = "https://github.com/WhatAmISupposedToPutHere/asahi-nvram"
-repository = "https://github.com/WhatAmISupposedToPutHere/asahi-nvram"
+homepage = "https://github.com/AsahiLinux/asahi-nvram"
+repository = "https://github.com/AsahiLinux/asahi-nvram"
 
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
