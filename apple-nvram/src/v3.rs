@@ -26,7 +26,7 @@ const APPLE_SYSTEM_VARIABLE_GUID: &[u8; 16] = &[
     0x40, 0xA0, 0xDD, 0xD2, 0x77, 0xF8, 0x43, 0x92, 0xB4, 0xA3, 0x1E, 0x73, 0x04, 0x20, 0x65, 0x16,
 ];
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 enum Slot<T> {
     Valid(T),
     Invalid,
@@ -69,15 +69,14 @@ impl<T> Slot<T> {
 
 #[derive(Debug)]
 pub struct Nvram<'a> {
-    partitions: [Slot<Partition<'a>>; 16],
-    partition_count: usize,
+    partitions: Vec<Slot<Partition<'a>>>,
     active: usize,
 }
 
 impl<'a> Nvram<'a> {
     pub fn parse(nvr: &'a [u8]) -> crate::Result<Nvram<'a>> {
         let partition_count = nvr.len() / PARTITION_SIZE;
-        let mut partitions: [Slot<Partition<'a>>; 16] = Default::default();
+        let mut partitions = vec![Default::default(); partition_count];
         let mut active = 0;
         let mut max_gen = 0;
         let mut valid_partitions = 0;
@@ -110,22 +109,15 @@ impl<'a> Nvram<'a> {
             return Err(Error::ParseError);
         }
 
-        Ok(Nvram {
-            partitions,
-            partition_count,
-            active,
-        })
+        Ok(Nvram { partitions, active })
     }
 
     fn partitions(&self) -> impl Iterator<Item = &Partition<'a>> {
-        self.partitions
-            .iter()
-            .take(self.partition_count)
-            .filter_map(|x| match x {
-                Slot::Valid(p) => Some(p),
-                Slot::Invalid => None,
-                Slot::Empty => None,
-            })
+        self.partitions.iter().filter_map(|x| match x {
+            Slot::Valid(p) => Some(p),
+            Slot::Invalid => None,
+            Slot::Empty => None,
+        })
     }
 
     fn active_part(&self) -> &Partition<'a> {
@@ -140,7 +132,7 @@ impl<'a> Nvram<'a> {
 
 impl<'a> crate::Nvram<'a> for Nvram<'a> {
     fn serialize(&self) -> crate::Result<Vec<u8>> {
-        let mut v = Vec::with_capacity(self.partition_count * PARTITION_SIZE);
+        let mut v = Vec::with_capacity(self.partitions.len() * PARTITION_SIZE);
         for p in self.partitions() {
             p.serialize(&mut v);
         }
@@ -175,7 +167,7 @@ impl<'a> crate::Nvram<'a> for Nvram<'a> {
         if ap.total_used() <= ap.usable_size() {
             offset = (self.active * PARTITION_SIZE) as u32;
         } else {
-            let new_active = (self.active + 1) % self.partition_count;
+            let new_active = (self.active + 1) % self.partitions.len();
             offset = (new_active * PARTITION_SIZE) as u32;
             if !self.partitions[new_active].empty() {
                 w.erase_if_needed(offset, PARTITION_SIZE);
