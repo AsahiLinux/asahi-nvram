@@ -44,12 +44,16 @@ fn bluez_connect_device(
     Ok(())
 }
 
-pub fn bluez_connect(info: &crate::BtInfo) -> Result<(), Box<dyn std::error::Error>> {
+pub fn bluez_connect(
+    bt_info: &crate::BtInfo,
+    ble_info: &[crate::BleDevice],
+) -> Result<(), Box<dyn std::error::Error>> {
     let con = dbus::blocking::Connection::new_system()?;
 
     let adapter_mac = format!(
         "{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}",
-        info.mac[0], info.mac[1], info.mac[2], info.mac[3], info.mac[4], info.mac[5]
+        bt_info.mac[0], bt_info.mac[1], bt_info.mac[2],
+        bt_info.mac[3], bt_info.mac[4], bt_info.mac[5]
     );
 
     let bluez1 = con.with_proxy("org.bluez", "/org/bluez", Duration::from_secs(2));
@@ -71,7 +75,10 @@ pub fn bluez_connect(info: &crate::BtInfo) -> Result<(), Box<dyn std::error::Err
         let bt_addr: String = adapter1.get("org.bluez.Adapter1", "Address")?;
 
         if bt_addr.eq(adapter_mac.as_str()) {
-            for dev in &info.devices {
+            for dev in &bt_info.devices {
+                bluez_connect_device(&con, &adapter_path, &dev.mac)?;
+            }
+            for dev in ble_info {
                 bluez_connect_device(&con, &adapter_path, &dev.mac)?;
             }
             return Ok(());
