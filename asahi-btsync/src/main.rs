@@ -28,7 +28,6 @@ enum Error {
     BluezConfigDirNotFound,
     SliceError,
     DbusSystemd,
-    DbusBluez,
 }
 
 impl From<apple_nvram::Error> for Error {
@@ -452,8 +451,7 @@ fn sync_btkeys(
         // sleep 500 ms to let bluetoothd reload its config
         thread::sleep(Duration::from_millis(500));
         if let Err(e) = dbus::bluez_connect(&bt_info, &ble_info) {
-            println!("Failed to connect bluetooth devices {}", e);
-            return Err(Error::DbusBluez);
+            eprintln!("Failed to connect bluetooth devices: {}", e);
         }
     }
     Ok(())

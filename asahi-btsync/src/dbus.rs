@@ -44,6 +44,22 @@ fn bluez_connect_device(
     Ok(())
 }
 
+fn connect_devices<I, F, E>(devices: I, mut connect: F)
+where
+    I: IntoIterator<Item = [u8; 6]>,
+    F: FnMut(&[u8; 6]) -> Result<(), E>,
+    E: std::fmt::Display,
+{
+    for mac in devices {
+        if let Err(e) = connect(&mac) {
+            eprintln!(
+                "Failed to connect BT dev {:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}: {}",
+                mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], e
+            );
+        }
+    }
+}
+
 pub fn bluez_connect(
     bt_info: &crate::BtInfo,
     ble_info: &[crate::BleDevice],
@@ -52,8 +68,12 @@ pub fn bluez_connect(
 
     let adapter_mac = format!(
         "{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}",
-        bt_info.mac[0], bt_info.mac[1], bt_info.mac[2],
-        bt_info.mac[3], bt_info.mac[4], bt_info.mac[5]
+        bt_info.mac[0],
+        bt_info.mac[1],
+        bt_info.mac[2],
+        bt_info.mac[3],
+        bt_info.mac[4],
+        bt_info.mac[5]
     );
 
     let bluez1 = con.with_proxy("org.bluez", "/org/bluez", Duration::from_secs(2));
@@ -75,14 +95,38 @@ pub fn bluez_connect(
         let bt_addr: String = adapter1.get("org.bluez.Adapter1", "Address")?;
 
         if bt_addr.eq(adapter_mac.as_str()) {
-            for dev in &bt_info.devices {
-                bluez_connect_device(&con, &adapter_path, &dev.mac)?;
-            }
-            for dev in ble_info {
-                bluez_connect_device(&con, &adapter_path, &dev.mac)?;
-            }
+            let devices = bt_info
+                .devices
+                .iter()
+                .map(|dev| dev.mac)
+                .chain(ble_info.iter().map(|dev| dev.mac));
+            connect_devices(devices, |mac| {
+                bluez_connect_device(&con, &adapter_path, mac)
+            });
             return Ok(());
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::connect_devices;
+
+    #[test]
+    fn a_failed_connection_does_not_skip_later_devices() {
+        let devices = [[1, 0, 0, 0, 0, 0], [2, 0, 0, 0, 0, 0]];
+        let mut attempted = Vec::new();
+
+        connect_devices(devices, |mac| {
+            attempted.push(*mac);
+            if mac[0] == 1 {
+                Err("device is offline")
+            } else {
+                Ok(())
+            }
+        });
+
+        assert_eq!(attempted, devices);
+    }
 }
