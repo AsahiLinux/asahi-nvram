@@ -24,11 +24,7 @@ pub fn systemd_reload_bt_config() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn bluez_connect_device(
-    con: &dbus::blocking::Connection,
-    adapter_path: &str,
-    mac: &[u8; 6],
-) -> Result<(), Box<dyn std::error::Error>> {
+fn bluez_connect_device(con: &dbus::blocking::Connection, adapter_path: &str, mac: &[u8; 6]) {
     let dev_mac = format!(
         "{:02X}_{:02X}_{:02X}_{:02X}_{:02X}_{:02X}",
         mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]
@@ -40,8 +36,9 @@ fn bluez_connect_device(
 
     // busctl call org.bluez /org/bluez/hci0/dev_$BTADDR org.bluez.Device1 Connect
     let r: Result<(), _> = device1.method_call("org.bluez.Device1", "Connect", ());
-    r?;
-    Ok(())
+    if let Err(e) = r {
+        println!("connect failed: {e}")
+    }
 }
 
 pub fn bluez_connect(
@@ -76,10 +73,10 @@ pub fn bluez_connect(
 
         if bt_addr.eq(adapter_mac.as_str()) {
             for dev in &bt_info.devices {
-                bluez_connect_device(&con, &adapter_path, &dev.mac)?;
+                bluez_connect_device(&con, &adapter_path, &dev.mac);
             }
             for dev in ble_info {
-                bluez_connect_device(&con, &adapter_path, &dev.mac)?;
+                bluez_connect_device(&con, &adapter_path, &dev.mac);
             }
             return Ok(());
         }
